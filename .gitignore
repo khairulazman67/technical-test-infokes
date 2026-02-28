@@ -1,22 +1,33 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.vscode
 
 # Dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
+.yarn/
+jspm_packages/
+
+# Bun
+bun.lockb
+.bun/
 
 # Local env files
 .env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
 
 # Testing
-coverage
+coverage/
+*.lcov
+.nyc_output
+__screenshots__/
 
 # Turbo
-.turbo
+.turbo/
+.turbo/**
 
 # Vercel
 .vercel
@@ -24,15 +35,53 @@ coverage
 # Build Outputs
 .next/
 out/
-build
-dist
+build/
+dist/
+dist-ssr/
+*.tsbuildinfo
+*.tgz
 
-
-# Debug
+# Debug & Logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+bun-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Misc
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *.pem
+
+# OS
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# Caches
+.cache/
+.eslintcache
+
+# Temporary files
+*.tmp
+*.temp
+*.local
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
+
+# Vite
+*.timestamp-*-*.mjs

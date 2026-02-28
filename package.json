@@ -20,5 +20,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "vuetify": "^4.0.0"
+  }
 }
