@@ -1,30 +1,3 @@
-<script setup lang="ts">
-import type { Folder } from "../types/folder";
-
-interface Props {
-  modelValue: boolean;
-  x: number;
-  y: number;
-  folder: Folder | null;
-}
-
-interface Emits {
-  (e: "update:modelValue", value: boolean): void;
-  (e: "open"): void;
-  (e: "new-folder"): void;
-  (e: "rename"): void;
-  (e: "delete"): void;
-}
-
-defineProps<Props>();
-const emit = defineEmits<Emits>();
-
-const handleAction = (action: "open" | "new-folder" | "rename" | "delete") => {
-  emit(action);
-  emit("update:modelValue", false);
-};
-</script>
-
 <template>
   <v-menu
     :model-value="modelValue"
@@ -65,3 +38,30 @@ const handleAction = (action: "open" | "new-folder" | "rename" | "delete") => {
     </v-list>
   </v-menu>
 </template>
+
+<script setup lang="ts">
+import type { Folder } from "../types/folder";
+
+interface Props {
+  modelValue: boolean;
+  x: number;
+  y: number;
+  folder: Folder | null;
+}
+
+interface Emits {
+  (e: "update:modelValue", value: boolean): void;
+  (e: "open"): void;
+  (e: "new-folder"): void;
+  (e: "rename"): void;
+  (e: "delete"): void;
+}
+
+defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const handleAction = (action: "open" | "new-folder" | "rename" | "delete") => {
+  emit(action);
+  emit("update:modelValue", false);
+};
+</script>
