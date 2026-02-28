@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import type { Folder } from "../types/folder";
+import { folderApi } from "../services/api";
 
 interface Props {
   folders: Folder[];
@@ -22,35 +23,36 @@ const emit = defineEmits<Emits>();
 const localSearchQuery = ref(props.searchQuery);
 const searchResults = ref<Folder[]>([]);
 const isSearching = computed(() => localSearchQuery.value.trim().length > 0);
+const searching = ref(false);
 
-// Recursive search function
-const searchFolders = (items: Folder[], query: string): Folder[] => {
-  const results: Folder[] = [];
-  const lowerQuery = query.toLowerCase();
+// Handle search input with API
+const handleSearch = async () => {
+  const query = localSearchQuery.value.trim();
 
-  const search = (folders: Folder[]) => {
-    for (const folder of folders) {
-      if (folder.name.toLowerCase().includes(lowerQuery)) {
-        results.push(folder);
-      }
-      if (folder.children && folder.children.length > 0) {
-        search(folder.children);
-      }
-    }
-  };
-
-  search(items);
-  return results;
-};
-
-// Handle search input
-const handleSearch = () => {
-  if (localSearchQuery.value.trim().length === 0) {
+  if (query.length === 0) {
     searchResults.value = [];
     return;
   }
-  searchResults.value = searchFolders(props.folders, localSearchQuery.value);
+
+  searching.value = true;
+  try {
+    searchResults.value = await folderApi.search(query);
+  } catch (error) {
+    console.error("Search error:", error);
+    searchResults.value = [];
+  } finally {
+    searching.value = false;
+  }
 };
+
+// Debounce search
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(localSearchQuery, () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    handleSearch();
+  }, 300); // 300ms debounce
+});
 
 // Clear search
 const clearSearch = () => {
@@ -95,7 +97,7 @@ const handleTreeActivation = (ids: string[]) => {
         variant="outlined"
         clearable
         hide-details
-        @input="handleSearch"
+        :loading="searching"
         @click:clear="clearSearch"
       ></v-text-field>
     </v-card-text>
@@ -105,7 +107,8 @@ const handleTreeActivation = (ids: string[]) => {
 
       <!-- Search Results -->
       <div v-else-if="isSearching">
-        <v-list v-if="searchResults.length > 0">
+        <v-progress-linear v-if="searching" indeterminate></v-progress-linear>
+        <v-list v-else-if="searchResults.length > 0">
           <v-list-item
             v-for="folder in searchResults"
             :key="folder.id"
