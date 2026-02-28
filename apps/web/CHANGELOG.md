@@ -1,6 +1,4 @@
 ## 0.1.0 - 2026-02-27
 
-### Added
-
-- Initial setup
-- Slicing UI
+- [Feat] Initial setup
+- [Feat] Slicing UI

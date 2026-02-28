@@ -9,7 +9,8 @@ Monorepo project dengan Turborepo yang berisi aplikasi web folder explorer dan A
 ├── apps/
 │   ├── api/          # Backend API (Bun + ElysiaJS)
 │   └── web/          # Frontend Web (Vue 3 + Vuetify)
-├── packages/         # Shared packages (jika ada)
+├── packages/         # Shared packages
+│   └── types/        # Shared TypeScript types (@repo/types)
 └── turbo.json        # Turborepo configuration
 ```
 
@@ -97,8 +98,10 @@ Atau:
 
 ```bash
 cd apps/api
-bun run dev
+bun --watch src/index.ts
 ```
+
+**Note**: Ada bug di Bun 1.3.10 dengan beberapa `bun run` commands. Jika mengalami error, gunakan command langsung seperti contoh di atas.
 
 ### Port Default
 
@@ -159,12 +162,64 @@ Dokumentasi lengkap: [apps/web/EXPLORER_GUIDE.md](apps/web/EXPLORER_GUIDE.md)
 
 ### API (apps/api)
 
-Backend API untuk folder management.
+Backend API untuk folder management dengan arsitektur yang clean dan scalable.
 
 Tech stack:
 
 - Bun runtime
+- Elysia (HTTP framework)
+- Prisma ORM
+- PostgreSQL
 - TypeScript
+- Dependency Injection
+
+Features:
+
+- RESTful API untuk CRUD operations
+- Folder tree structure dengan self-referencing
+- Cascade delete untuk children folders
+- Path auto-generation
+- Type-safe dengan TypeScript
+- Layered architecture (Repository, Service, Controller, Routes)
+- Config management (tidak langsung baca .env)
+- Singleton patterns untuk shared resources
+- **Swagger/OpenAPI documentation** - Interactive API docs di `/swagger`
+
+Dokumentasi lengkap: [apps/api/API_DOCUMENTATION.md](apps/api/API_DOCUMENTATION.md)
+
+Swagger Guide: [apps/api/SWAGGER_GUIDE.md](apps/api/SWAGGER_GUIDE.md)
+
+## Shared Packages
+
+### @repo/types (packages/types)
+
+Shared TypeScript types untuk seluruh monorepo.
+
+Features:
+
+- Single source of truth untuk types
+- Type-safe communication antara frontend dan backend
+- Reusable types dan interfaces
+- Type guards untuk runtime checking
+
+Types yang tersedia:
+
+- `Folder` - Folder entity interface
+- `CreateFolderDTO` - DTO untuk create folder
+- `UpdateFolderDTO` - DTO untuk update folder
+- `FolderTreeDTO` - Simplified tree structure
+- `ApiResponse<T>` - Standard API response wrapper
+- `isSuccessResponse()` - Type guard untuk success response
+- `isErrorResponse()` - Type guard untuk error response
+
+Usage:
+
+```typescript
+import type { Folder, ApiResponse } from "@repo/types";
+import { isSuccessResponse } from "@repo/types";
+```
+
+Dokumentasi lengkap: [packages/types/README.md](packages/types/README.md)
 
 ## Troubleshooting
 

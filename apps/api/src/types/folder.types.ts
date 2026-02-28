@@ -1,8 +1,7 @@
-// Re-export types from shared package
+// Re-export types from shared package for backward compatibility
 export type {
-  BreadcrumbItem,
   CreateFolderDTO,
-  Folder,
+  Folder as FolderDTO,
   FolderTreeDTO,
   UpdateFolderDTO,
 } from "@repo/types";
