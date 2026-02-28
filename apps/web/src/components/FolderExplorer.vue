@@ -1,219 +1,3 @@
-<script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import type { Folder } from "../types/folder";
-import { mockFolders } from "../mock/folderData";
-
-const folders = ref<Folder[]>([]);
-const selectedFolder = ref<Folder | null>(null);
-const subFolders = ref<Folder[]>([]);
-const loading = ref(false);
-const searchQuery = ref("");
-const searchResults = ref<Folder[]>([]);
-const isSearching = computed(() => searchQuery.value.trim().length > 0);
-
-// Context menu
-const contextMenu = ref(false);
-const contextMenuX = ref(0);
-const contextMenuY = ref(0);
-const contextMenuFolder = ref<Folder | null>(null);
-
-// Dialogs
-const renameDialog = ref(false);
-const deleteDialog = ref(false);
-const newFolderDialog = ref(false);
-const newFolderName = ref("");
-const renameFolderName = ref("");
-
-// Breadcrumb navigation
-const breadcrumbs = computed(() => {
-  if (!selectedFolder.value) return [];
-
-  const crumbs: Array<{ text: string; folder: Folder | null }> = [
-    { text: "Root", folder: null },
-  ];
-
-  const path = selectedFolder.value.path.split("/").filter((p) => p);
-  let currentPath = "";
-
-  for (const segment of path) {
-    currentPath += "/" + segment;
-    const folder = findFolderByPath(folders.value, currentPath);
-    if (folder) {
-      crumbs.push({ text: folder.name, folder });
-    }
-  }
-
-  return crumbs;
-});
-
-// Find folder by path
-const findFolderByPath = (items: Folder[], path: string): Folder | null => {
-  for (const item of items) {
-    if (item.path === path) return item;
-    if (item.children) {
-      const found = findFolderByPath(item.children, path);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-// Fetch folder structure from backend
-const fetchFolders = async () => {
-  loading.value = true;
-  try {
-    // TODO: Replace with actual API endpoint
-    // const response = await fetch("/api/folders");
-    // folders.value = await response.json();
-
-    // Using mock data for now
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    folders.value = mockFolders;
-  } catch (error) {
-    console.error("Error fetching folders:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Recursive search function
-const searchFolders = (items: Folder[], query: string): Folder[] => {
-  const results: Folder[] = [];
-  const lowerQuery = query.toLowerCase();
-
-  const search = (folders: Folder[]) => {
-    for (const folder of folders) {
-      if (folder.name.toLowerCase().includes(lowerQuery)) {
-        results.push(folder);
-      }
-      if (folder.children && folder.children.length > 0) {
-        search(folder.children);
-      }
-    }
-  };
-
-  search(items);
-  return results;
-};
-
-// Handle search input
-const handleSearch = () => {
-  if (searchQuery.value.trim().length === 0) {
-    searchResults.value = [];
-    return;
-  }
-  searchResults.value = searchFolders(folders.value, searchQuery.value);
-};
-
-// Clear search
-const clearSearch = () => {
-  searchQuery.value = "";
-  searchResults.value = [];
-};
-
-// Handle folder selection
-const selectFolder = (folder: Folder | null) => {
-  selectedFolder.value = folder;
-  subFolders.value = folder?.children || [];
-};
-
-// Context menu handlers
-const showContextMenu = (e: MouseEvent, folder: Folder) => {
-  e.preventDefault();
-  contextMenu.value = false;
-  contextMenuX.value = e.clientX;
-  contextMenuY.value = e.clientY;
-  contextMenuFolder.value = folder;
-  setTimeout(() => {
-    contextMenu.value = true;
-  }, 10);
-};
-
-const openFolder = () => {
-  if (contextMenuFolder.value) {
-    selectFolder(contextMenuFolder.value);
-  }
-  contextMenu.value = false;
-};
-
-const showRenameDialog = () => {
-  if (contextMenuFolder.value) {
-    renameFolderName.value = contextMenuFolder.value.name;
-    renameDialog.value = true;
-  }
-  contextMenu.value = false;
-};
-
-const showDeleteDialog = () => {
-  deleteDialog.value = true;
-  contextMenu.value = false;
-};
-
-const showNewFolderDialog = () => {
-  newFolderName.value = "";
-  newFolderDialog.value = true;
-  contextMenu.value = false;
-};
-
-const renameFolder = () => {
-  if (contextMenuFolder.value && renameFolderName.value.trim()) {
-    // TODO: Call API to rename folder
-    console.log(
-      "Rename folder:",
-      contextMenuFolder.value.name,
-      "to",
-      renameFolderName.value,
-    );
-    contextMenuFolder.value.name = renameFolderName.value;
-    renameDialog.value = false;
-  }
-};
-
-const deleteFolder = () => {
-  if (contextMenuFolder.value && selectedFolder.value) {
-    // TODO: Call API to delete folder
-    console.log("Delete folder:", contextMenuFolder.value.name);
-    const index = subFolders.value.findIndex(
-      (f) => f.id === contextMenuFolder.value?.id,
-    );
-    if (index > -1) {
-      subFolders.value.splice(index, 1);
-    }
-    deleteDialog.value = false;
-  }
-};
-
-const createNewFolder = () => {
-  if (newFolderName.value.trim() && contextMenuFolder.value) {
-    // TODO: Call API to create new folder
-    const newFolder: Folder = {
-      id: Date.now().toString(),
-      name: newFolderName.value,
-      path: `${contextMenuFolder.value.path}/${newFolderName.value}`,
-      children: [],
-    };
-
-    console.log("Create new folder:", newFolder);
-
-    if (!contextMenuFolder.value.children) {
-      contextMenuFolder.value.children = [];
-    }
-    contextMenuFolder.value.children.push(newFolder);
-
-    // Refresh subfolders if current folder is selected
-    if (selectedFolder.value?.id === contextMenuFolder.value.id) {
-      subFolders.value = contextMenuFolder.value.children;
-    }
-
-    newFolderDialog.value = false;
-  }
-};
-
-onMounted(() => {
-  fetchFolders();
-});
-</script>
-
 <template>
   <v-container fluid class="pa-0 fill-height">
     <v-row no-gutters class="fill-height">
@@ -473,6 +257,222 @@ onMounted(() => {
     </v-dialog>
   </v-container>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
+import { mockFolders } from "../mock/folderData";
+import type { Folder } from "../types/folder";
+
+const folders = ref<Folder[]>([]);
+const selectedFolder = ref<Folder | null>(null);
+const subFolders = ref<Folder[]>([]);
+const loading = ref(false);
+const searchQuery = ref("");
+const searchResults = ref<Folder[]>([]);
+const isSearching = computed(() => searchQuery.value.trim().length > 0);
+
+// Context menu
+const contextMenu = ref(false);
+const contextMenuX = ref(0);
+const contextMenuY = ref(0);
+const contextMenuFolder = ref<Folder | null>(null);
+
+// Dialogs
+const renameDialog = ref(false);
+const deleteDialog = ref(false);
+const newFolderDialog = ref(false);
+const newFolderName = ref("");
+const renameFolderName = ref("");
+
+// Breadcrumb navigation
+const breadcrumbs = computed(() => {
+  if (!selectedFolder.value) return [];
+
+  const crumbs: Array<{ text: string; folder: Folder | null }> = [
+    { text: "Root", folder: null },
+  ];
+
+  const path = selectedFolder.value.path.split("/").filter((p) => p);
+  let currentPath = "";
+
+  for (const segment of path) {
+    currentPath += "/" + segment;
+    const folder = findFolderByPath(folders.value, currentPath);
+    if (folder) {
+      crumbs.push({ text: folder.name, folder });
+    }
+  }
+
+  return crumbs;
+});
+
+// Find folder by path
+const findFolderByPath = (items: Folder[], path: string): Folder | null => {
+  for (const item of items) {
+    if (item.path === path) return item;
+    if (item.children) {
+      const found = findFolderByPath(item.children, path);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// Fetch folder structure from backend
+const fetchFolders = async () => {
+  loading.value = true;
+  try {
+    // TODO: Replace with actual API endpoint
+    // const response = await fetch("/api/folders");
+    // folders.value = await response.json();
+
+    // Using mock data for now
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    folders.value = mockFolders;
+  } catch (error) {
+    console.error("Error fetching folders:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Recursive search function
+const searchFolders = (items: Folder[], query: string): Folder[] => {
+  const results: Folder[] = [];
+  const lowerQuery = query.toLowerCase();
+
+  const search = (folders: Folder[]) => {
+    for (const folder of folders) {
+      if (folder.name.toLowerCase().includes(lowerQuery)) {
+        results.push(folder);
+      }
+      if (folder.children && folder.children.length > 0) {
+        search(folder.children);
+      }
+    }
+  };
+
+  search(items);
+  return results;
+};
+
+// Handle search input
+const handleSearch = () => {
+  if (searchQuery.value.trim().length === 0) {
+    searchResults.value = [];
+    return;
+  }
+  searchResults.value = searchFolders(folders.value, searchQuery.value);
+};
+
+// Clear search
+const clearSearch = () => {
+  searchQuery.value = "";
+  searchResults.value = [];
+};
+
+// Handle folder selection
+const selectFolder = (folder: Folder | null) => {
+  selectedFolder.value = folder;
+  subFolders.value = folder?.children || [];
+};
+
+// Context menu handlers
+const showContextMenu = (e: MouseEvent, folder: Folder) => {
+  e.preventDefault();
+  contextMenu.value = false;
+  contextMenuX.value = e.clientX;
+  contextMenuY.value = e.clientY;
+  contextMenuFolder.value = folder;
+  setTimeout(() => {
+    contextMenu.value = true;
+  }, 10);
+};
+
+const openFolder = () => {
+  if (contextMenuFolder.value) {
+    selectFolder(contextMenuFolder.value);
+  }
+  contextMenu.value = false;
+};
+
+const showRenameDialog = () => {
+  if (contextMenuFolder.value) {
+    renameFolderName.value = contextMenuFolder.value.name;
+    renameDialog.value = true;
+  }
+  contextMenu.value = false;
+};
+
+const showDeleteDialog = () => {
+  deleteDialog.value = true;
+  contextMenu.value = false;
+};
+
+const showNewFolderDialog = () => {
+  newFolderName.value = "";
+  newFolderDialog.value = true;
+  contextMenu.value = false;
+};
+
+const renameFolder = () => {
+  if (contextMenuFolder.value && renameFolderName.value.trim()) {
+    // TODO: Call API to rename folder
+    console.log(
+      "Rename folder:",
+      contextMenuFolder.value.name,
+      "to",
+      renameFolderName.value,
+    );
+    contextMenuFolder.value.name = renameFolderName.value;
+    renameDialog.value = false;
+  }
+};
+
+const deleteFolder = () => {
+  if (contextMenuFolder.value && selectedFolder.value) {
+    // TODO: Call API to delete folder
+    console.log("Delete folder:", contextMenuFolder.value.name);
+    const index = subFolders.value.findIndex(
+      (f) => f.id === contextMenuFolder.value?.id,
+    );
+    if (index > -1) {
+      subFolders.value.splice(index, 1);
+    }
+    deleteDialog.value = false;
+  }
+};
+
+const createNewFolder = () => {
+  if (newFolderName.value.trim() && contextMenuFolder.value) {
+    // TODO: Call API to create new folder
+    const newFolder: Folder = {
+      id: Date.now().toString(),
+      name: newFolderName.value,
+      path: `${contextMenuFolder.value.path}/${newFolderName.value}`,
+      children: [],
+    };
+
+    console.log("Create new folder:", newFolder);
+
+    if (!contextMenuFolder.value.children) {
+      contextMenuFolder.value.children = [];
+    }
+    contextMenuFolder.value.children.push(newFolder);
+
+    // Refresh subfolders if current folder is selected
+    if (selectedFolder.value?.id === contextMenuFolder.value.id) {
+      subFolders.value = contextMenuFolder.value.children;
+    }
+
+    newFolderDialog.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchFolders();
+});
+</script>
 
 <style scoped>
 .border-right {

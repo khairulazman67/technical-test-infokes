@@ -1,68 +1,3 @@
-<script setup lang="ts">
-import { ref, watch } from "vue";
-import type { Folder } from "../types/folder";
-
-interface Props {
-  renameDialog: boolean;
-  deleteDialog: boolean;
-  newFolderDialog: boolean;
-  folder: Folder | null;
-}
-
-interface Emits {
-  (e: "update:renameDialog", value: boolean): void;
-  (e: "update:deleteDialog", value: boolean): void;
-  (e: "update:newFolderDialog", value: boolean): void;
-  (e: "rename", name: string): void;
-  (e: "delete"): void;
-  (e: "create", name: string): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
-
-const renameFolderName = ref("");
-const newFolderName = ref("");
-
-// Watch for dialog open to set initial values
-watch(
-  () => props.renameDialog,
-  (isOpen) => {
-    if (isOpen && props.folder) {
-      renameFolderName.value = props.folder.name;
-    }
-  },
-);
-
-watch(
-  () => props.newFolderDialog,
-  (isOpen) => {
-    if (isOpen) {
-      newFolderName.value = "";
-    }
-  },
-);
-
-const handleRename = () => {
-  if (renameFolderName.value.trim()) {
-    emit("rename", renameFolderName.value);
-    emit("update:renameDialog", false);
-  }
-};
-
-const handleDelete = () => {
-  emit("delete");
-  emit("update:deleteDialog", false);
-};
-
-const handleCreate = () => {
-  if (newFolderName.value.trim()) {
-    emit("create", newFolderName.value);
-    emit("update:newFolderDialog", false);
-  }
-};
-</script>
-
 <template>
   <!-- Rename Dialog -->
   <v-dialog
@@ -133,3 +68,68 @@ const handleCreate = () => {
     </v-card>
   </v-dialog>
 </template>
+
+<script setup lang="ts">
+import { ref, watch } from "vue";
+import type { Folder } from "../types/folder";
+
+interface Props {
+  renameDialog: boolean;
+  deleteDialog: boolean;
+  newFolderDialog: boolean;
+  folder: Folder | null;
+}
+
+interface Emits {
+  (e: "update:renameDialog", value: boolean): void;
+  (e: "update:deleteDialog", value: boolean): void;
+  (e: "update:newFolderDialog", value: boolean): void;
+  (e: "rename", name: string): void;
+  (e: "delete"): void;
+  (e: "create", name: string): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const renameFolderName = ref("");
+const newFolderName = ref("");
+
+// Watch for dialog open to set initial values
+watch(
+  () => props.renameDialog,
+  (isOpen) => {
+    if (isOpen && props.folder) {
+      renameFolderName.value = props.folder.name;
+    }
+  },
+);
+
+watch(
+  () => props.newFolderDialog,
+  (isOpen) => {
+    if (isOpen) {
+      newFolderName.value = "";
+    }
+  },
+);
+
+const handleRename = () => {
+  if (renameFolderName.value.trim()) {
+    emit("rename", renameFolderName.value);
+    emit("update:renameDialog", false);
+  }
+};
+
+const handleDelete = () => {
+  emit("delete");
+  emit("update:deleteDialog", false);
+};
+
+const handleCreate = () => {
+  if (newFolderName.value.trim()) {
+    emit("create", newFolderName.value);
+    emit("update:newFolderDialog", false);
+  }
+};
+</script>

@@ -1,30 +1,5 @@
-<script setup lang="ts">
-import { computed } from "vue";
-import type { Folder } from "../types/folder";
-
-interface Props {
-  folders: Folder[];
-  selectedFolder: Folder | null;
-  breadcrumbs?: Array<{ text: string; folder: Folder | null }>;
-}
-
-interface Emits {
-  (e: "select", folder: Folder): void;
-  (e: "contextmenu", event: MouseEvent, folder: Folder): void;
-  (e: "breadcrumb-click", folder: Folder | null): void;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  breadcrumbs: () => [],
-});
-
-const emit = defineEmits<Emits>();
-
-const hasFolders = computed(() => props.folders.length > 0);
-</script>
-
 <template>
-  <v-card flat class="fill-height d-flex flex-column">
+  <v-card flat class="fill-height">
     <v-card-title class="bg-grey-lighten-3">
       <v-icon class="mr-2">mdi-folder-open-outline</v-icon>
       {{ selectedFolder ? selectedFolder.name : "Select a folder" }}
@@ -79,6 +54,31 @@ const hasFolders = computed(() => props.folders.length > 0);
     </v-card-text>
   </v-card>
 </template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import type { Folder } from "../types/folder";
+
+interface Props {
+  folders: Folder[];
+  selectedFolder: Folder | null;
+  breadcrumbs?: Array<{ text: string; folder: Folder | null }>;
+}
+
+interface Emits {
+  (e: "select", folder: Folder): void;
+  (e: "contextmenu", event: MouseEvent, folder: Folder): void;
+  (e: "breadcrumb-click", folder: Folder | null): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  breadcrumbs: () => [],
+});
+
+const emit = defineEmits<Emits>();
+
+const hasFolders = computed(() => props.folders.length > 0);
+</script>
 
 <style scoped>
 .fill-height {

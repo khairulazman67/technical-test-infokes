@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { folderApi } from "../services/api";
 import type { Folder } from "../types/folder";
 
 export function useFolderOperations() {
@@ -42,42 +43,24 @@ export function useFolderOperations() {
   };
 
   // Rename folder
-  const renameFolder = (folder: Folder, newName: string) => {
-    // TODO: Call API to rename folder
-    console.log("Rename folder:", folder.name, "to", newName);
-    folder.name = newName;
+  const renameFolder = async (
+    folderId: string,
+    newName: string,
+  ): Promise<Folder> => {
+    return await folderApi.update(folderId, { name: newName });
   };
 
   // Delete folder
-  const deleteFolder = (folder: Folder, parentFolders: Folder[]): boolean => {
-    // TODO: Call API to delete folder
-    console.log("Delete folder:", folder.name);
-    const index = parentFolders.findIndex((f) => f.id === folder.id);
-    if (index > -1) {
-      parentFolders.splice(index, 1);
-      return true;
-    }
-    return false;
+  const deleteFolder = async (folderId: string): Promise<void> => {
+    await folderApi.delete(folderId);
   };
 
   // Create new folder
-  const createNewFolder = (parentFolder: Folder, name: string): Folder => {
-    // TODO: Call API to create new folder
-    const newFolder: Folder = {
-      id: Date.now().toString(),
-      name: name,
-      path: `${parentFolder.path}/${name}`,
-      children: [],
-    };
-
-    console.log("Create new folder:", newFolder);
-
-    if (!parentFolder.children) {
-      parentFolder.children = [];
-    }
-    parentFolder.children.push(newFolder);
-
-    return newFolder;
+  const createNewFolder = async (
+    parentId: string | null,
+    name: string,
+  ): Promise<Folder> => {
+    return await folderApi.create({ name, parentId: parentId || undefined });
   };
 
   return {

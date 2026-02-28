@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import type { Folder } from "../types/folder";
-import { mockFolders } from "../mock/folderData";
-import { useFolderOperations } from "../composables/useFolderOperations";
-import FolderTree from "../components/FolderTree.vue";
-import FolderList from "../components/FolderList.vue";
+import { computed, onMounted, ref } from "vue";
 import FolderContextMenu from "../components/FolderContextMenu.vue";
 import FolderDialogs from "../components/FolderDialogs.vue";
+import FolderList from "../components/FolderList.vue";
+import FolderTree from "../components/FolderTree.vue";
+import { useFolderOperations } from "../composables/useFolderOperations";
+import { folderApi } from "../services/api";
+import type { Folder } from "../types/folder";
 
 const folders = ref<Folder[]>([]);
 const selectedFolder = ref<Folder | null>(null);
 const subFolders = ref<Folder[]>([]);
 const loading = ref(false);
+
+// Snackbar for notifications
+const snackbar = ref(false);
+const snackbarText = ref("");
+const snackbarColor = ref("success");
 
 // Context menu
 const contextMenu = ref(false);
@@ -37,19 +42,21 @@ const breadcrumbs = computed(() =>
   generateBreadcrumbs(selectedFolder.value, folders.value),
 );
 
+// Show notification
+const showNotification = (message: string, color: string = "success") => {
+  snackbarText.value = message;
+  snackbarColor.value = color;
+  snackbar.value = true;
+};
+
 // Fetch folder structure from backend
 const fetchFolders = async () => {
   loading.value = true;
   try {
-    // TODO: Replace with actual API endpoint
-    // const response = await fetch("/api/folders");
-    // folders.value = await response.json();
-
-    // Using mock data for now
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    folders.value = mockFolders;
+    folders.value = await folderApi.getTree();
   } catch (error) {
     console.error("Error fetching folders:", error);
+    showNotification("Failed to load folders", "error");
   } finally {
     loading.value = false;
   }
@@ -92,26 +99,55 @@ const handleShowNewFolderDialog = () => {
 };
 
 // Dialog actions
-const handleRename = (newName: string) => {
-  if (contextMenuFolder.value) {
-    renameFolder(contextMenuFolder.value, newName);
+const handleRename = async (newName: string) => {
+  if (!contextMenuFolder.value) return;
+
+  try {
+    await renameFolder(contextMenuFolder.value.id, newName);
+    showNotification("Folder renamed successfully");
+    await fetchFolders();
+  } catch (error) {
+    console.error("Error renaming folder:", error);
+    showNotification("Failed to rename folder", "error");
   }
 };
 
-const handleDelete = () => {
-  if (contextMenuFolder.value) {
-    deleteFolder(contextMenuFolder.value, subFolders.value);
+const handleDelete = async () => {
+  if (!contextMenuFolder.value) return;
+
+  try {
+    await deleteFolder(contextMenuFolder.value.id);
+    showNotification("Folder deleted successfully");
+
+    // Clear selection if deleted folder was selected
+    if (selectedFolder.value?.id === contextMenuFolder.value.id) {
+      selectedFolder.value = null;
+      subFolders.value = [];
+    }
+
+    await fetchFolders();
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+    showNotification("Failed to delete folder", "error");
   }
 };
 
-const handleCreate = (name: string) => {
-  if (contextMenuFolder.value) {
-    const newFolder = createNewFolder(contextMenuFolder.value, name);
+const handleCreate = async (name: string) => {
+  if (!contextMenuFolder.value) return;
+
+  try {
+    await createNewFolder(contextMenuFolder.value.id, name);
+    showNotification("Folder created successfully");
+    await fetchFolders();
 
     // Refresh subfolders if current folder is selected
     if (selectedFolder.value?.id === contextMenuFolder.value.id) {
-      subFolders.value = contextMenuFolder.value.children || [];
+      const updatedFolder = await folderApi.getById(contextMenuFolder.value.id);
+      subFolders.value = updatedFolder.children || [];
     }
+  } catch (error) {
+    console.error("Error creating folder:", error);
+    showNotification("Failed to create folder", "error");
   }
 };
 
@@ -167,6 +203,14 @@ onMounted(() => {
       @delete="handleDelete"
       @create="handleCreate"
     />
+
+    <!-- Notification Snackbar -->
+    <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar = false">Close</v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
