@@ -7,7 +7,7 @@ Monorepo project dengan Turborepo yang berisi aplikasi web folder explorer dan A
 ```
 .
 ├── apps/
-│   ├── api/          # Backend API (Bun + TypeScript)
+│   ├── api/          # Backend API (Bun + ElysiaJS)
 │   └── web/          # Frontend Web (Vue 3 + Vuetify)
 ├── packages/         # Shared packages (jika ada)
 └── turbo.json        # Turborepo configuration
@@ -204,7 +204,7 @@ turbo build --force
 - **Monorepo**: Turborepo
 - **Package Manager**: Bun
 - **Frontend**: Vue 3 + Vuetify
-- **Backend**: Bun + ElysuaJs
+- **Backend**: Bun + ElysiaJS
 - **Build Tool**: Vite (web), Bun (api)
 
 ## Useful Links
