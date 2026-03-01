@@ -71,13 +71,13 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import type { Folder } from "../types/folder";
+import type { FolderOrTree } from "../types/folder";
 
 interface Props {
   renameDialog: boolean;
   deleteDialog: boolean;
   newFolderDialog: boolean;
-  folder: Folder | null;
+  folder: FolderOrTree | null;
 }
 
 interface Emits {

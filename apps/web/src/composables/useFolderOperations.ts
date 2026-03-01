@@ -1,12 +1,15 @@
 import { ref } from "vue";
 import { folderApi } from "../services/api";
-import type { Folder } from "../types/folder";
+import type { Folder, FolderOrTree, FolderTreeDTO } from "../types/folder";
 
 export function useFolderOperations() {
-  const contextMenuFolder = ref<Folder | null>(null);
+  const contextMenuFolder = ref<FolderOrTree | null>(null);
 
-  // Find folder by path
-  const findFolderByPath = (items: Folder[], path: string): Folder | null => {
+  // Find folder by path (works with both Folder and FolderTreeDTO)
+  const findFolderByPath = (
+    items: FolderOrTree[],
+    path: string,
+  ): FolderOrTree | null => {
     for (const item of items) {
       if (item.path === path) return item;
       if (item.children) {
@@ -17,16 +20,17 @@ export function useFolderOperations() {
     return null;
   };
 
-  // Generate breadcrumbs
+  // Generate breadcrumbs (works with both Folder and FolderTreeDTO)
   const generateBreadcrumbs = (
-    folder: Folder | null,
-    allFolders: Folder[],
-  ): Array<{ text: string; folder: Folder | null }> => {
+    folder: FolderOrTree | null,
+    allFolders: FolderOrTree[],
+  ): Array<{ text: string; folder: FolderOrTree | null }> => {
     if (!folder) return [];
 
-    const crumbs: Array<{ text: string; folder: Folder | null }> = [
-      { text: "Root", folder: null },
-    ];
+    const crumbs: Array<{
+      text: string;
+      folder: FolderOrTree | null;
+    }> = [{ text: "Root", folder: null }];
 
     const path = folder.path.split("/").filter((p) => p);
     let currentPath = "";
@@ -63,6 +67,21 @@ export function useFolderOperations() {
     return await folderApi.create({ name, parentId: parentId || undefined });
   };
 
+  // Fetch folder tree
+  const fetchFolderTree = async (): Promise<FolderTreeDTO[]> => {
+    return await folderApi.getTree();
+  };
+
+  // Get folder by ID
+  const getFolderById = async (folderId: string): Promise<Folder> => {
+    return await folderApi.getById(folderId);
+  };
+
+  // Search folders
+  const searchFolders = async (query: string): Promise<Folder[]> => {
+    return await folderApi.search(query);
+  };
+
   return {
     contextMenuFolder,
     findFolderByPath,
@@ -70,5 +89,8 @@ export function useFolderOperations() {
     renameFolder,
     deleteFolder,
     createNewFolder,
+    fetchFolderTree,
+    getFolderById,
+    searchFolders,
   };
 }

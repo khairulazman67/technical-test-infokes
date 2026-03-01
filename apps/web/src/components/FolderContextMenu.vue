@@ -40,13 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Folder } from "../types/folder";
+import type { FolderOrTree, FolderTreeDTO } from "../types/folder";
 
 interface Props {
   modelValue: boolean;
   x: number;
   y: number;
-  folder: Folder | null;
+  folder: FolderOrTree | null;
 }
 
 interface Emits {
@@ -61,7 +61,15 @@ defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const handleAction = (action: "open" | "new-folder" | "rename" | "delete") => {
-  emit(action);
+  if (action === "open") {
+    emit("open");
+  } else if (action === "new-folder") {
+    emit("new-folder");
+  } else if (action === "rename") {
+    emit("rename");
+  } else if (action === "delete") {
+    emit("delete");
+  }
   emit("update:modelValue", false);
 };
 </script>

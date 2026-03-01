@@ -9,13 +9,11 @@ class DatabaseService {
     this.prisma = new PrismaClient({
       datasources: {
         db: {
-          url: config.get("database").url,
+          url: config.database.url,
         },
       },
       log:
-        config.get("env") === "development"
-          ? ["query", "error", "warn"]
-          : ["error"],
+        config.env === "development" ? ["query", "error", "warn"] : ["error"],
     });
   }
 

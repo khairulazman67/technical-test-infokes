@@ -47,43 +47,30 @@
         </div>
       </div>
 
-      <!-- Folder Tree -->
-      <v-treeview
+      <!-- Custom Folder Tree (Built from scratch) -->
+      <CustomTreeView
         v-else
         :items="folders"
-        item-value="id"
-        item-title="name"
-        activatable
-        open-on-click
-        @update:activated="handleTreeActivation"
-      >
-        <template v-slot:prepend="{ item }">
-          <v-icon>
-            {{
-              item.children && item.children.length > 0
-                ? "mdi-folder"
-                : "mdi-folder-outline"
-            }}
-          </v-icon>
-        </template>
-      </v-treeview>
+        @select="emit('select', $event)"
+      />
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { folderApi } from "../services/api";
-import type { Folder } from "../types/folder";
+import { useFolderOperations } from "../composables/useFolderOperations";
+import CustomTreeView from "./CustomTreeView.vue";
+import type { Folder, FolderOrTree, FolderTreeDTO } from "../types/folder";
 
 interface Props {
-  folders: Folder[];
+  folders: FolderTreeDTO[];
   loading?: boolean;
   searchQuery?: string;
 }
 
 interface Emits {
-  (e: "select", folder: Folder): void;
+  (e: "select", folder: FolderOrTree): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,6 +79,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+const { searchFolders } = useFolderOperations();
 
 const localSearchQuery = ref(props.searchQuery);
 const searchResults = ref<Folder[]>([]);
@@ -109,7 +98,7 @@ const handleSearch = async () => {
 
   searching.value = true;
   try {
-    searchResults.value = await folderApi.search(query);
+    searchResults.value = await searchFolders(query);
   } catch (error) {
     console.error("Search error:", error);
     searchResults.value = [];
@@ -131,25 +120,6 @@ watch(localSearchQuery, () => {
 const clearSearch = () => {
   localSearchQuery.value = "";
   searchResults.value = [];
-};
-
-// Find folder by ID
-const findFolderById = (items: Folder[], id: string): Folder | null => {
-  for (const item of items) {
-    if (item.id === id) return item;
-    if (item.children) {
-      const found = findFolderById(item.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const handleTreeActivation = (ids: string[]) => {
-  if (ids.length > 0) {
-    const folder = findFolderById(props.folders, ids[0]);
-    if (folder) emit("select", folder);
-  }
 };
 </script>
 
