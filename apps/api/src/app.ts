@@ -32,7 +32,7 @@ export const createApp = async () => {
           ],
           servers: [
             {
-              url: `http://localhost:${config.get("server").port}`,
+              url: `http://localhost:${config.server.port}`,
               description: "Development server",
             },
           ],
@@ -133,7 +133,7 @@ export const createApp = async () => {
 export const startServer = async () => {
   try {
     const app = await createApp();
-    const port = config.get("server").port;
+    const port = config.server.port;
 
     app.listen(port);
 
@@ -141,7 +141,7 @@ export const startServer = async () => {
 🚀 Server is running!
     
 📍 URL: http://localhost:${port}
-🌍 Environment: ${config.get("env")}
+🌍 Environment: ${config.env}
 📊 Health: http://localhost:${port}/health
 📁 Folders API: http://localhost:${port}/folders
 📚 Swagger Docs: http://localhost:${port}/swagger

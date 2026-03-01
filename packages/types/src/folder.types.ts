@@ -39,9 +39,7 @@ export interface FolderTreeDTO {
 }
 
 /**
- * Breadcrumb item for navigation
+ * Union type for folder that can be either full entity or tree DTO
+ * Used in components that handle both tree display and detail operations
  */
-export interface BreadcrumbItem {
-  text: string;
-  folder: Folder | null;
-}
+export type FolderOrTree = Folder | FolderTreeDTO;

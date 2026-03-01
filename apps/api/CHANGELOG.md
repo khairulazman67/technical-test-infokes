@@ -1,3 +1,9 @@
+## 0.1.1 - 2026-03-01
+
+- [Feat] Initial setup test
+- [Feat] Create all service test
+- [Chore] Adjusment folder type
+
 ## 0.1.0 - 2026-02-28
 
 - [Feat] Initial setup

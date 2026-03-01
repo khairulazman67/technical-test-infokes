@@ -1,10 +1,16 @@
-import { Folder, PrismaClient } from "@prisma/client";
+import type { Folder } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { prisma } from "../database/prisma";
 
-export class FolderRepository {
-  private prisma: PrismaClient;
+type PrismaTransaction = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+>;
 
-  constructor(prismaClient: PrismaClient = prisma) {
+export class FolderRepository {
+  private prisma: PrismaClient | PrismaTransaction;
+
+  constructor(prismaClient: PrismaClient | PrismaTransaction = prisma) {
     this.prisma = prismaClient;
   }
 

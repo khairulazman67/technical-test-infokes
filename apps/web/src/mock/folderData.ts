@@ -1,6 +1,6 @@
-import type { Folder } from "../types/folder";
+import type { FolderTreeDTO } from "../types/folder";
 
-export const mockFolders: Folder[] = [
+export const mockFolders: FolderTreeDTO[] = [
   {
     id: "1",
     name: "Documents",
