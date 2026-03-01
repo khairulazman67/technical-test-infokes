@@ -1,30 +1,5 @@
-<script setup lang="ts">
-import { computed } from "vue";
-import type { Folder } from "../types/folder";
-
-interface Props {
-  folders: Folder[];
-  selectedFolder: Folder | null;
-  breadcrumbs?: Array<{ text: string; folder: Folder | null }>;
-}
-
-interface Emits {
-  (e: "select", folder: Folder): void;
-  (e: "contextmenu", event: MouseEvent, folder: Folder): void;
-  (e: "breadcrumb-click", folder: Folder | null): void;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  breadcrumbs: () => [],
-});
-
-const emit = defineEmits<Emits>();
-
-const hasFolders = computed(() => props.folders.length > 0);
-</script>
-
 <template>
-  <v-card flat class="fill-height d-flex flex-column">
+  <v-card flat class="fill-height">
     <v-card-title class="bg-grey-lighten-3">
       <v-icon class="mr-2">mdi-folder-open-outline</v-icon>
       {{ selectedFolder ? selectedFolder.name : "Select a folder" }}
@@ -35,8 +10,8 @@ const hasFolders = computed(() => props.folders.length > 0);
       v-if="selectedFolder && breadcrumbs.length > 0"
       class="py-1 px-2 bg-grey-lighten-5"
     >
-      <v-breadcrumbs :items="breadcrumbs" density="compact" class="pa-0">
-        <template v-slot:item="{ item }">
+      <v-breadcrumbs density="compact" class="pa-0">
+        <template v-for="(item, index) in breadcrumbs" :key="index">
           <v-breadcrumbs-item
             :disabled="!item.folder && !selectedFolder"
             @click="emit('breadcrumb-click', item.folder)"
@@ -44,9 +19,9 @@ const hasFolders = computed(() => props.folders.length > 0);
           >
             {{ item.text }}
           </v-breadcrumbs-item>
-        </template>
-        <template v-slot:divider>
-          <v-icon size="small">mdi-chevron-right</v-icon>
+          <v-breadcrumbs-divider v-if="index < breadcrumbs.length - 1">
+            <v-icon size="small">mdi-chevron-right</v-icon>
+          </v-breadcrumbs-divider>
         </template>
       </v-breadcrumbs>
     </v-card-text>
@@ -79,6 +54,31 @@ const hasFolders = computed(() => props.folders.length > 0);
     </v-card-text>
   </v-card>
 </template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import type { FolderOrTree, FolderTreeDTO } from "../types/folder";
+
+interface Props {
+  folders: FolderOrTree[];
+  selectedFolder: FolderOrTree | null;
+  breadcrumbs?: Array<{ text: string; folder: FolderOrTree | null }>;
+}
+
+interface Emits {
+  (e: "select", folder: FolderOrTree): void;
+  (e: "contextmenu", event: MouseEvent, folder: FolderOrTree): void;
+  (e: "breadcrumb-click", folder: FolderOrTree | null): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  breadcrumbs: () => [],
+});
+
+const emit = defineEmits<Emits>();
+
+const hasFolders = computed(() => props.folders.length > 0);
+</script>
 
 <style scoped>
 .fill-height {

@@ -1,6 +1,8 @@
-export interface Folder {
-  id: string;
-  name: string;
-  path: string;
-  children?: Folder[];
-}
+// Re-export types from shared package
+export type {
+  CreateFolderDTO,
+  Folder,
+  FolderOrTree,
+  FolderTreeDTO,
+  UpdateFolderDTO,
+} from "@repo/types";
